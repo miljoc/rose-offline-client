@@ -60,7 +60,8 @@ pub fn character_select_enter_system(
             .remove::<FreeCamera>()
             .remove::<OrbitCamera>()
             .insert(CameraAnimation::once(
-                asset_server.load("3DDATA/TITLE/CAMERA01_INSELECT01.ZMO"),
+                //asset_server.load("3DDATA/TITLE/CAMERA01_INSELECT01.ZMO"), //4
+                asset_server.load("3DDATA/TITLE/CAMERA01_INSELECTN.ZMO"), //7 //@todo: make array
             ));
     }
 
@@ -182,7 +183,8 @@ pub fn character_select_system(
             WorldConnectionEvent::CreateCharacterSuccess { character_slot: _ } => {
                 let (camera_entity, _, _, _) = query_camera.single();
                 commands.entity(camera_entity).insert(CameraAnimation::once(
-                    asset_server.load("3DDATA/TITLE/CAMERA01_OUTCREATE01.ZMO"),
+                    //asset_server.load("3DDATA/TITLE/CAMERA01_OUTCREATE01.ZMO"), //4
+                    asset_server.load("3DDATA/TITLE/CAMERA01_OUTCREATEN.ZMO"), //7 @todo: make array
                 ));
                 *character_select_state = CharacterSelectState::CharacterSelect(None);
 
@@ -285,7 +287,8 @@ pub fn character_select_system(
                 // Start camera animation
                 let (camera_entity, _, _, _) = query_camera.single();
                 commands.entity(camera_entity).insert(CameraAnimation::once(
-                    asset_server.load("3DDATA/TITLE/CAMERA01_INGAME01.ZMO"),
+                    //asset_server.load("3DDATA/TITLE/CAMERA01_INGAME01.ZMO"), //4
+                    asset_server.load("3DDATA/TITLE/CAMERA01_INGAMEN.ZMO"), //7 @todo: make array
                 ));
 
                 *character_select_state = CharacterSelectState::Leaving;

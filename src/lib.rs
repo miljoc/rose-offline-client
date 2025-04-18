@@ -1114,7 +1114,7 @@ fn load_game_data_irose(
             .vfs
             .read_file::<StbFile, _>("3DDATA/STB/LIST_MORPH_OBJECT.STB")
             .expect("Failed to load 3DDATA/STB/LIST_MORPH_OBJECT.STB"),
-        character_select_positions: vec![
+        /*character_select_positions: vec![ // Login map 4: @todo make global array to have hybrid login maps
             Transform::from_translation(Vec3::new(5205.0, 1.0, -5205.0))
                 .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
                 .with_scale(Vec3::new(1.5, 1.5, 1.5)),
@@ -1128,6 +1128,23 @@ fn load_game_data_irose(
                 .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
                 .with_scale(Vec3::new(1.5, 1.5, 1.5)),
             Transform::from_translation(Vec3::new(5195.00, 1.0, -5205.00))
+                .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
+                .with_scale(Vec3::new(1.5, 1.5, 1.5)),
+        ], */ 
+        character_select_positions: vec![ // Login map 7: @todo make global array to have hybrid login maps
+            Transform::from_translation(Vec3::new(4981.0, 1.0, -5425.0))
+                .with_rotation(Quat::from_xyzw(0.0, 0.0, 0.0, 0.0))
+                .with_scale(Vec3::new(1.5, 1.5, 1.5)),
+            Transform::from_translation(Vec3::new(4983.0, 0.0, -5427.0))
+                .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
+                .with_scale(Vec3::new(1.5, 1.0, 1.5)),
+            Transform::from_translation(Vec3::new(4985.0, 0.0, -5429.0))
+                .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
+                .with_scale(Vec3::new(1.5, 1.5, 1.5)),
+            Transform::from_translation(Vec3::new(4988.0, 0.0, -5432.0))
+                .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
+                .with_scale(Vec3::new(1.5, 1.5, 1.5)),
+            Transform::from_translation(Vec3::new(4990.0, 0.0, -5434.0))
                 .with_rotation(Quat::from_xyzw(0.0, 1.0, 0.0, 0.0))
                 .with_scale(Vec3::new(1.5, 1.5, 1.5)),
         ],

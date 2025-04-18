@@ -610,7 +610,7 @@ pub fn player_command_system(
                             }
                             ItemClass::CartAccessory | ItemClass::CastleGearWeapon => {
                                 Some(VehiclePartIndex::Arms)
-                            }
+                            } //@todo: add mounts
                             _ => None,
                         }
                     } else {

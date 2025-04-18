@@ -36,7 +36,8 @@ pub fn login_state_enter_system(
             .remove::<FreeCamera>()
             .remove::<OrbitCamera>()
             .insert(CameraAnimation::repeat(
-                asset_server.load("3DDATA/TITLE/CAMERA01_INTRO01.ZMO"),
+                //asset_server.load("3DDATA/TITLE/CAMERA01_INTRO01.ZMO"), //4
+                asset_server.load("3DDATA/TITLE/CAMERA01_INTRON.ZMO"), //7
                 None,
             ));
     }
@@ -44,7 +45,7 @@ pub fn login_state_enter_system(
     commands.remove_resource::<Account>();
     commands.insert_resource(LoginState::Input);
 
-    loaded_zone.send(LoadZoneEvent::new(ZoneId::new(4).unwrap()));
+    loaded_zone.send(LoadZoneEvent::new(ZoneId::new(7).unwrap())); // @TODO make a array with random maps to choose from and right cameras
 }
 
 pub fn login_state_exit_system(mut commands: Commands) {

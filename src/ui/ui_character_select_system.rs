@@ -118,8 +118,9 @@ pub fn ui_character_select_system(
         commands
             .entity(query_camera.single())
             .insert(CameraAnimation::once(
-                asset_server.load("3DDATA/TITLE/CAMERA01_CREATE01.ZMO"),
-            ));
+                //asset_server.load("3DDATA/TITLE/CAMERA01_CREATE01.ZMO"), //4
+                asset_server.load("3DDATA/TITLE/CAMERA01_CREATEN.ZMO")), //7 @#TODO MAKE ARRAY
+            );
 
         *character_select_state = CharacterSelectState::CharacterCreate;
     }
