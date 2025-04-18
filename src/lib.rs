@@ -33,6 +33,7 @@ use rose_file_readers::{
 };
 
 pub mod animation;
+pub mod assets;
 pub mod audio;
 pub mod bundles;
 pub mod components;
@@ -528,6 +529,7 @@ fn run_client(config: &Config, app_state: AppState, mut systems_config: SystemsC
     });
     app.add_plugins((
         bevy_egui::EguiPlugin,
+        crate::assets::IcoAssetPlugin,
         bevy_rapier3d::prelude::RapierPhysicsPlugin::<bevy_rapier3d::prelude::NoUserData>::default(
         ),
         bevy_rapier3d::prelude::RapierDebugRenderPlugin {

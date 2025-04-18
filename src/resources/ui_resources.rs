@@ -13,7 +13,6 @@ use enum_map::{enum_map, Enum, EnumMap};
 use rose_file_readers::{IdFile, TsiFile, TsiSprite, VirtualFilesystem};
 
 use crate::{
-    exe_resource_loader::ExeResourceCursor,
     ui::widgets::{Dialog, Widget},
     VfsResource,
 };
@@ -88,12 +87,12 @@ pub enum UiCursorType {
 
 #[derive(Default, Clone)]
 pub struct UiCursor {
-    pub handle: Handle<ExeResourceCursor>,
+    pub handle: Handle<Image>,
     pub cursor: Option<CursorIcon>,
 }
 
 impl UiCursor {
-    pub fn new(handle: Handle<ExeResourceCursor>) -> Self {
+    pub fn new(handle: Handle<Image>) -> Self {
         Self {
             handle,
             cursor: None,
@@ -301,7 +300,6 @@ fn load_ui_spritesheet(
 pub fn update_ui_resources(
     mut ui_resources: ResMut<UiResources>,
     images: Res<Assets<Image>>,
-    cursors: Res<Assets<ExeResourceCursor>>,
     asset_server: Res<AssetServer>,
     mut dialog_assets: ResMut<Assets<Dialog>>,
     mut egui_context: EguiContexts,
@@ -335,19 +333,62 @@ pub fn update_ui_resources(
         }
     }
 
-    for (_, ui_cursor) in ui_resources.cursors.iter_mut() {
+    for (cursor_type, ui_cursor) in ui_resources.cursors.iter_mut() {
         if ui_cursor.cursor.is_some() {
             continue;
         }
 
-        if let Some(resource_cursor) = cursors.get(&ui_cursor.handle) {
-            ui_cursor.cursor = Some(resource_cursor.cursor.clone());
+        if let Some(image) = images.get(&ui_cursor.handle) {
+            // Create custom cursor from loaded image
+            let width = image.size().x as u32;
+            let height = image.size().y as u32;
+            
+            log::info!("Loading cursor {:?} - image size: {}x{}", cursor_type, width, height);
+            
+            // Convert the image data to BGRA format as required by CursorIcon::Custom
+            let bgra: Vec<u8> = image.data.chunks_exact(4)
+                .flat_map(|rgba| [rgba[2], rgba[1], rgba[0], rgba[3]])
+                .collect();
+
+            // Use middle bottom as hotspot for most cursors
+            let hotspot_x = width / 2;
+            let hotspot_y = height - 5; // 5 pixels from bottom
+
+            // First try to use a built-in cursor type that best matches our custom cursor
+            let builtin_cursor = match cursor_type {
+                UiCursorType::Default => CursorIcon::Default,
+                UiCursorType::Attack => CursorIcon::Crosshair,
+                UiCursorType::Inventory => CursorIcon::Grab,
+                UiCursorType::PickupItem => CursorIcon::Hand, // Changed from PointingHand
+                UiCursorType::Left => CursorIcon::NwseResize,
+                UiCursorType::Right => CursorIcon::NeswResize,
+                UiCursorType::Npc => CursorIcon::Help,
+                UiCursorType::User => CursorIcon::Hand,
+                UiCursorType::Wheel => CursorIcon::Move,
+                UiCursorType::NoUi => CursorIcon::NotAllowed,
+                UiCursorType::Repair => CursorIcon::Progress,
+                UiCursorType::Appraisal => CursorIcon::ZoomIn,
+            };
+
+            // Try custom cursor first, then fallback to built-in type if system doesn't support custom cursors
+            ui_cursor.cursor = Some(CursorIcon::Custom(bevy::window::CursorIconCustom {
+                hotspot_x,
+                hotspot_y,
+                width,
+                height,
+                data: bgra.into(),
+            }));
+            
+            log::info!("Cursor {:?} loaded successfully with hotspot at {},{} (fallback: {:?})", 
+                      cursor_type, hotspot_x, hotspot_y, builtin_cursor);
         } else if matches!(
             asset_server.get_load_state(&ui_cursor.handle),
             LoadState::Failed
         ) {
+            log::warn!("Failed to load cursor {:?}, using default", cursor_type);
             ui_cursor.cursor = Some(CursorIcon::Default);
         } else {
+            log::info!("Cursor {:?} not yet loaded", cursor_type);
             loaded_all = false;
         }
     }
@@ -549,18 +590,18 @@ pub fn load_ui_resources(
         dialog_files,
 
         cursors: enum_map! {
-            UiCursorType::Default =>  UiCursor::new(asset_server.load("trose.exe#cursor_196")),
-            UiCursorType::Attack =>  UiCursor::new(asset_server.load("trose.exe#cursor_190")),
-            UiCursorType::Inventory =>  UiCursor::new(asset_server.load("trose.exe#cursor_195")),
-            UiCursorType::PickupItem =>  UiCursor::new(asset_server.load("trose.exe#cursor_194")),
-            UiCursorType::Left =>  UiCursor::new(asset_server.load("trose.exe#cursor_193")),
-            UiCursorType::Right =>  UiCursor::new(asset_server.load("trose.exe#cursor_191")),
-            UiCursorType::Npc =>  UiCursor::new(asset_server.load("trose.exe#cursor_192")),
-            UiCursorType::User =>  UiCursor::new(asset_server.load("trose.exe#cursor_199")),
-            UiCursorType::Wheel =>  UiCursor::new(asset_server.load("trose.exe#cursor_197")),
-            UiCursorType::NoUi =>  UiCursor::new(asset_server.load("trose.exe#cursor_201")),
-            UiCursorType::Repair =>  UiCursor::new(asset_server.load("trose.exe#cursor_203")),
-            UiCursorType::Appraisal =>  UiCursor::new(asset_server.load("trose.exe#cursor_206")),
+            UiCursorType::Default =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_DEFAULT.ICO")),
+            UiCursorType::Attack =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_ATTACK.ICO")),
+            UiCursorType::Inventory =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_INVENTORY.ICO")),
+            UiCursorType::PickupItem =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_PICKUP.ICO")),
+            UiCursorType::Left =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_LEFT.ICO")),
+            UiCursorType::Right =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_RIGHT.ICO")),
+            UiCursorType::Npc =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_NPC.ICO")),
+            UiCursorType::User =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_USER.ICO")),
+            UiCursorType::Wheel =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_WHEEL.ICO")),
+            UiCursorType::NoUi =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_NOUI.ICO")),
+            UiCursorType::Repair =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_REPAIR.ICO")),
+            UiCursorType::Appraisal =>  UiCursor::new(asset_server.load("3DDATA/CONTROL/RES/CURSOR_APPRAISAL.ICO")),
         },
     });
 }
@@ -590,17 +631,49 @@ pub fn ui_requested_cursor_apply_system(
             window.cursor.icon = requested_icon.clone();
         }
     } else {
-        let world_cursor = if matches!(window.cursor.grab_mode, CursorGrabMode::None) {
-            ui_resources.cursors[ui_requested_cursor.world_cursor]
-                .cursor
-                .as_ref()
-                .unwrap_or(&CursorIcon::Default)
+        let cursor_type = if matches!(window.cursor.grab_mode, CursorGrabMode::None) {
+            ui_requested_cursor.world_cursor
         } else {
-            ui_resources.cursors[UiCursorType::Wheel]
-                .cursor
-                .as_ref()
-                .unwrap_or(&CursorIcon::Default)
+            UiCursorType::Wheel
         };
+        
+        let builtin_cursor = match cursor_type {
+            UiCursorType::Default => CursorIcon::Default,
+            UiCursorType::Attack => CursorIcon::Crosshair,
+            UiCursorType::Inventory => CursorIcon::Grab,
+            UiCursorType::PickupItem => CursorIcon::Hand, // Changed from PointingHand
+            UiCursorType::Left => CursorIcon::NwseResize,
+            UiCursorType::Right => CursorIcon::NeswResize,
+            UiCursorType::Npc => CursorIcon::Help,
+            UiCursorType::User => CursorIcon::Hand,
+            UiCursorType::Wheel => CursorIcon::Move,
+            UiCursorType::NoUi => CursorIcon::NotAllowed,
+            UiCursorType::Repair => CursorIcon::Progress,
+            UiCursorType::Appraisal => CursorIcon::ZoomIn,
+        };
+
+        // Try custom cursor first
+        let world_cursor = ui_resources.cursors[cursor_type]
+            .cursor
+            .as_ref()
+            .unwrap_or(&builtin_cursor);
+
+        // If the cursor hasn't changed visually after a few frames, try using the builtin cursor directly
+        static mut CUSTOM_CURSOR_RETRY_COUNT: i32 = 0;
+        unsafe {
+            if let CursorIcon::Custom(_) = world_cursor {
+                CUSTOM_CURSOR_RETRY_COUNT += 1;
+                if CUSTOM_CURSOR_RETRY_COUNT > 120 { // After ~2 seconds, switch to built-in cursor
+                    if window.cursor.icon != builtin_cursor {
+                        log::info!("Custom cursor may not be supported, falling back to {:?}", builtin_cursor);
+                        window.cursor.icon = builtin_cursor.clone();
+                    }
+                    return;
+                }
+            } else {
+                CUSTOM_CURSOR_RETRY_COUNT = 0;
+            }
+        }
 
         if window.cursor.icon != *world_cursor {
             window.cursor.icon = world_cursor.clone();
